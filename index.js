@@ -85,6 +85,22 @@ async function run() {
         },
       };
 
+      app.delete("/events/:id", async (req, res) => {
+        const { id } = req.params;
+        const { email } = req.query;
+
+        try {
+          const result = await eventCollection.deleteOne({
+            _id: new ObjectId(id),
+            createdBy: email,
+          });
+
+          res.send(result);
+        } catch (error) {
+          res.status(500).send({ message: "Failed to delete event" });
+        }
+      });
+
       const result = await eventCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
