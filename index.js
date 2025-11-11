@@ -42,6 +42,22 @@ async function run() {
       res.send({ result });
     });
 
+    app.get("/joined-events", async (req, res) => {
+      const result = await joinedEventCollection.find().toArray();
+
+      const sorted = result.sort(
+        (a, b) => new Date(a.eventDate) - new Date(b.eventDate)
+      );
+
+      res.send(sorted);
+    });
+
+    app.post("/joined-events", async (req, res) => {
+      const data = req.body;
+      const result = joinedEventCollection.insertOne(data);
+      res.send({ result });
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
