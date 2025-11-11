@@ -65,6 +65,30 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/events/:id", async (req, res) => {
+      const { id } = req.params;
+      const updateEvent = req.body;
+
+      const filter = {
+        _id: new ObjectId(id),
+        createdBy: updateEvent.createdBy,
+      };
+
+      const updateDoc = {
+        $set: {
+          title: updateEvent.title,
+          description: updateEvent.description,
+          eventType: updateEvent.eventType,
+          thumbnail: updateEvent.thumbnail,
+          location: updateEvent.location,
+          eventDate: updateEvent.eventDate,
+        },
+      };
+
+      const result = await eventCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
