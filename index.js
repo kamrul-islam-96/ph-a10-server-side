@@ -68,9 +68,11 @@ async function run() {
       res.send({ result });
     });
 
-    app.get("/joined-events",verifyToken, async (req, res) => {
-      const userEmail = req.query.userEmail; 
-      const result = await joinedEventCollection.find({joinedBy: userEmail}).toArray();
+    app.get("/joined-events", verifyToken, async (req, res) => {
+      const userEmail = req.query.userEmail;
+      const result = await joinedEventCollection
+        .find({ joinedBy: userEmail })
+        .toArray();
 
       const sorted = result.sort(
         (a, b) => new Date(a.eventDate) - new Date(b.eventDate)
@@ -85,7 +87,7 @@ async function run() {
       res.send({ result });
     });
 
-    app.get("/my-events/:email",verifyToken, async (req, res) => {
+    app.get("/my-events/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
       const result = await eventCollection.find({ createdBy: email }).toArray();
 
@@ -112,24 +114,24 @@ async function run() {
         },
       };
 
-      app.delete("/events/:id", async (req, res) => {
-        const { id } = req.params;
-        const { email } = req.query;
-
-        try {
-          const result = await eventCollection.deleteOne({
-            _id: new ObjectId(id),
-            createdBy: email,
-          });
-
-          res.send(result);
-        } catch (error) {
-          res.status(500).send({ message: "Failed to delete event" });
-        }
-      });
-
       const result = await eventCollection.updateOne(filter, updateDoc);
       res.send(result);
+    });
+
+    app.delete("/events/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const { email } = req.query;
+
+      try {
+        const result = await eventCollection.deleteOne({
+          _id: new ObjectId(id),
+          createdBy: email,
+        });
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Failed to delete event" });
+      }
     });
 
     await client.db("admin").command({ ping: 1 });
