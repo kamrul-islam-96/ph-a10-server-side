@@ -1,10 +1,36 @@
 const express = require("express");
 const cors = require("cors");
+const admin = require("firebase-admin");
 const app = express();
 const port = process.env.PORT || 3000;
+var serviceAccount = require("./ph-a10-2ab9e-firebase-adminsdk.json");
 
 app.use(cors());
 app.use(express.json());
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const verifyToken = async (req, res, next) => {
+  const authorized = req.headers.authorization;
+  if (!authorized) {
+    return res.status(401).send({
+      message: "unauthorized access token",
+    });
+  }
+
+  const token = authorized.split(" ")[1];
+
+  try {
+    await admin.auth().verifyIdToken(token);
+    next();
+  } catch (error) {
+    res.status(401).send({
+      message: "unauthorized access",
+    });
+  }
+};
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri =
@@ -42,8 +68,9 @@ async function run() {
       res.send({ result });
     });
 
-    app.get("/joined-events", async (req, res) => {
-      const result = await joinedEventCollection.find().toArray();
+    app.get("/joined-events",verifyToken, async (req, res) => {
+      const userEmail = req.query.userEmail; 
+      const result = await joinedEventCollection.find({joinedBy: userEmail}).toArray();
 
       const sorted = result.sort(
         (a, b) => new Date(a.eventDate) - new Date(b.eventDate)
@@ -54,11 +81,11 @@ async function run() {
 
     app.post("/joined-events", async (req, res) => {
       const data = req.body;
-      const result = joinedEventCollection.insertOne(data);
+      const result = await joinedEventCollection.insertOne(data);
       res.send({ result });
     });
 
-    app.get("/my-events/:email", async (req, res) => {
+    app.get("/my-events/:email",verifyToken, async (req, res) => {
       const { email } = req.params;
       const result = await eventCollection.find({ createdBy: email }).toArray();
 
