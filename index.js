@@ -25,6 +25,23 @@ async function run() {
     const eventCollection = db.collection("events");
     const joinedEventCollection = db.collection("joined-events");
 
+    app.get("/events", async (req, res) => {
+      const result = await eventCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/events/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await eventCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.post("/events", async (req, res) => {
+      const data = req.body;
+      const result = await eventCollection.insertOne(data);
+      res.send({ result });
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
