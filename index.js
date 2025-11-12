@@ -149,6 +149,20 @@ async function run() {
       };
 
       const result = await eventCollection.updateOne(filter, updateDoc);
+
+      await joinedEventCollection.updateMany(
+        { eventId: id },
+        {
+          $set: {
+            title: updateEvent.title,
+            description: updateEvent.description,
+            eventType: updateEvent.eventType,
+            thumbnail: updateEvent.thumbnail,
+            location: updateEvent.location,
+            eventDate: updateEvent.eventDate,
+          },
+        }
+      );
       res.send(result);
     });
 
