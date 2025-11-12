@@ -53,8 +53,32 @@ async function run() {
     const joinedEventCollection = db.collection("joined-events");
 
     app.get("/events", async (req, res) => {
-      const result = await eventCollection.find().toArray();
-      res.send(result);
+      try {
+        const { eventType, search } = req.query;
+        const query = {};
+
+        if (eventType && eventType !== "All") {
+          query.eventType = eventType.trim();
+        }
+
+        if (search && search.trim() !== "") {
+          query.title = { $regex: search.trim(), $options: "i" };
+        }
+
+        const result = await eventCollection
+          .find(query)
+          .sort({ eventDate: 1 })
+          .toArray();
+
+        if (result.length === 0) {
+          return res.status(404).send({ message: "No matching events found." });
+        }
+
+        res.send(result);
+      } catch (error) {
+        console.error("❌ Error fetching filtered events:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
     });
 
     app.get("/events/:id", async (req, res) => {
