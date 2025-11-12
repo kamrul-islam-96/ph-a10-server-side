@@ -23,7 +23,8 @@ const verifyToken = async (req, res, next) => {
   const token = authorized.split(" ")[1];
 
   try {
-    await admin.auth().verifyIdToken(token);
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
     next();
   } catch (error) {
     res.status(401).send({
@@ -62,8 +63,17 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/events", async (req, res) => {
+    app.post("/events", verifyToken, async (req, res) => {
       const data = req.body;
+      const actualUserEmail = req.user.email;
+
+      if (data.createdBy !== actualUserEmail) {
+        return res.status(403).send({
+          message:
+            "Unauthorized: You can only create events with your own email",
+        });
+      }
+
       const result = await eventCollection.insertOne(data);
       res.send({ result });
     });
