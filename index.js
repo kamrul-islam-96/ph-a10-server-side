@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
+require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 3000;
 var serviceAccount = require("./ph-a10-2ab9e-firebase-adminsdk.json");
@@ -35,7 +36,7 @@ const verifyToken = async (req, res, next) => {
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri =
-  "mongodb+srv://ph-a10-db:uPeEYyKHCGfNWyXv@cluster0.2ow2vy0.mongodb.net/?appName=Cluster0";
+  `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2ow2vy0.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -47,7 +48,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const db = client.db("ph-a10-db");
     const eventCollection = db.collection("events");
     const joinedEventCollection = db.collection("joined-events");
@@ -182,7 +183,7 @@ async function run() {
       }
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );

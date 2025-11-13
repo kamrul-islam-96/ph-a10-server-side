@@ -1,2 +1,4 @@
 node_modules
 ph-a10-2ab9e-firebase-adminsdk.json
+.env
+.vercel
