@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
-require('dotenv').config()
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 3000;
 var serviceAccount = require("./ph-a10-2ab9e-firebase-adminsdk.json");
@@ -35,8 +35,7 @@ const verifyToken = async (req, res, next) => {
 };
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const uri =
-  `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2ow2vy0.mongodb.net/?appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2ow2vy0.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -129,7 +128,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/events/:id", async (req, res) => {
+    app.put("/events/:id",verifyToken, async (req, res) => {
       const { id } = req.params;
       const updateEvent = req.body;
 
